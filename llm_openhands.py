@@ -3,6 +3,7 @@ import time
 import httpx
 import llm
 
+
 class OpenHandsModel(llm.KeyModel):
     needs_key = "openhands"
     key_env_var = "LLM_OPENHANDS_KEY"
@@ -25,32 +26,35 @@ class OpenHandsModel(llm.KeyModel):
         print(
             f"OpenHands URL: https://app.all-hands.dev/conversations/{conversation_id}"
         )
+        print()
 
         while True:
-            conversation_detail_response = httpx.get(
-                f"https://app.all-hands.dev/api/conversations/{conversation_id}",
+            trajectory_response = httpx.get(
+                f"https://app.all-hands.dev/api/conversations/{conversation_id}/trajectory",
                 headers={"Authorization": f"Bearer {key}"},
+                timeout=httpx.Timeout(5.0, read=30.0),
             )
             try:
-                conversation_detail_response.raise_for_status()
+                trajectory_response.raise_for_status()
             except httpx.HTTPStatusError:
                 continue
             else:
-                conversation_detail = conversation_detail_response.json()
-                if conversation_detail["status"] == "STOPPED":
+                trajectories = trajectory_response.json()["trajectory"]
+                last_trajectory = trajectories[-1]
+                if (
+                    "extras" in last_trajectory
+                    and last_trajectory["extras"].get("agent_state")
+                    == "awaiting_user_input"
+                ):
                     break
                 time.sleep(5)
 
-        trajectory_response = httpx.get(
-            f"https://app.all-hands.dev/api/conversations/{conversation_id}/trajectory",
-            headers={"Authorization": f"Bearer {key}"},
-            timeout=httpx.Timeout(5.0, read=30.0),
-        )
-        trajectory_response.raise_for_status()
-        trajectory = trajectory_response.json()["trajectory"]
-        for item in trajectory:
-            if item["source"] == "agent" and item.get("action") == "message":
-                yield item["message"]
+        for trajectory in trajectories:
+            if (
+                trajectory["source"] == "agent"
+                and trajectory.get("action") == "message"
+            ):
+                yield trajectory["message"]
 
 
 @llm.hookimpl

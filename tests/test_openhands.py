@@ -27,18 +27,6 @@ def test_execute(respx_mock):
         )
     )
     respx_mock.get(
-        "https://app.all-hands.dev/api/conversations/test-conversation-id",
-        headers__contains={"Authorization": "Bearer test-api-key"},
-    ).mock(
-        return_value=httpx.Response(
-            status_code=200,
-            json={
-                "conversation_id": "test-conversation-id",
-                "status": "STOPPED",
-            },
-        )
-    )
-    respx_mock.get(
         "https://app.all-hands.dev/api/conversations/test-conversation-id/trajectory",
         headers__contains={"Authorization": "Bearer test-api-key"},
     ).mock(
@@ -77,6 +65,12 @@ def test_execute(respx_mock):
                         "source": "agent",
                         "message": "Hello! I'm doing well, thank you for asking. How can I assist you today?",
                         "action": "message",
+                    },
+                    {
+                        "id": 8,
+                        "source": "environment",
+                        "observation": "agent_state_changed",
+                        "extras": {"agent_state": "awaiting_user_input", "reason": ""},
                     },
                 ]
             },
