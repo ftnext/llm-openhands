@@ -1,7 +1,9 @@
 import time
+from typing import Optional
 
 import httpx
 import llm
+from pydantic import Field
 
 
 class OpenHandsModel(llm.KeyModel):
@@ -9,11 +11,22 @@ class OpenHandsModel(llm.KeyModel):
     key_env_var = "LLM_OPENHANDS_KEY"
     can_stream = False
 
+    class Options(llm.Options):
+        repository: Optional[str] = Field(
+            description="GitHub repository URL to analyze",
+            default=None
+        )
+
     def __init__(self):
         self.model_id = "openhands"
 
     def execute(self, prompt, stream, response, conversation, key):
         request_json = {"initial_user_msg": prompt.prompt}
+        
+        # Add repository URL to the request if provided
+        if prompt.options.repository:
+            request_json["repository"] = prompt.options.repository
+            
         create_conversation_response = httpx.post(
             "https://app.all-hands.dev/api/conversations",
             headers={"Authorization": f"Bearer {key}"},

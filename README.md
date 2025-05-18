@@ -21,7 +21,11 @@ https://docs.all-hands.dev/modules/usage/cloud/cloud-api#obtaining-an-api-key
 ```bash
 export LLM_OPENHANDS_KEY=your_api_key_here
 
-llm -m devin "Hello, OpenHands"
+# Basic usage
+llm -m openhands "Hello, OpenHands"
+
+# Using with a GitHub repository
+llm -m openhands "Check for the authentication module to make sure that it follows the coding best practices for this repo." -o repository https://github.com/yourusername/your-repo
 ```
 
 ## Development

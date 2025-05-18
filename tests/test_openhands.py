@@ -80,6 +80,8 @@ def test_execute(respx_mock):
     sut = OpenHandsModel()
     prompt = MagicMock()
     prompt.prompt = "Hello, how are you?"
+    prompt.options = MagicMock()
+    prompt.options.repository = None
 
     actual = list(
         sut.execute(
@@ -94,3 +96,66 @@ def test_execute(respx_mock):
     assert actual == [
         "Hello! I'm doing well, thank you for asking. How can I assist you today?"
     ]
+
+
+@respx.mock
+def test_execute_with_repository(respx_mock):
+    repo_url = "https://github.com/yourusername/your-repo"
+    respx_mock.post(
+        "https://app.all-hands.dev/api/conversations",
+        headers__contains={"Authorization": "Bearer test-api-key"},
+        json__eq={"initial_user_msg": "Check the code", "repository": repo_url},
+    ).mock(
+        return_value=httpx.Response(
+            status_code=200,
+            json={"status": "ok", "conversation_id": "test-conversation-id"},
+        )
+    )
+    respx_mock.get(
+        "https://app.all-hands.dev/api/conversations/test-conversation-id/trajectory",
+        headers__contains={"Authorization": "Bearer test-api-key"},
+    ).mock(
+        return_value=httpx.Response(
+            status_code=200,
+            json={
+                "trajectory": [
+                    {
+                        "id": 2,
+                        "source": "user",
+                        "message": "Check the code",
+                        "action": "message",
+                    },
+                    {
+                        "id": 7,
+                        "source": "agent",
+                        "message": "I've checked the repository code.",
+                        "action": "message",
+                    },
+                    {
+                        "id": 8,
+                        "source": "environment",
+                        "observation": "agent_state_changed",
+                        "extras": {"agent_state": "awaiting_user_input", "reason": ""},
+                    },
+                ]
+            },
+        )
+    )
+
+    sut = OpenHandsModel()
+    prompt = MagicMock()
+    prompt.prompt = "Check the code"
+    prompt.options = MagicMock()
+    prompt.options.repository = repo_url
+
+    actual = list(
+        sut.execute(
+            prompt,
+            stream=False,
+            response=MagicMock(),
+            conversation=MagicMock(),
+            key="test-api-key",
+        )
+    )
+
+    assert actual == ["I've checked the repository code."]
