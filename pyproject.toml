@@ -41,4 +41,4 @@ CI = "https://github.com/ftnext/llm-openhands/actions"
 openhands = "llm_openhands"
 
 [project.optional-dependencies]
-test = ["pytest", "respx>=0.22.0"]
+test = ["pytest", "pytest-randomly", "respx>=0.22.0"]
