@@ -15,13 +15,15 @@ llm install llm-openhands
 ```
 ## Usage
 
+Here's an example from https://www.all-hands.dev/blog/programmatically-access-coding-agents-with-the-openhands-cloud-api
+
 **prerequisite**: OpenHands Cloud API key  
 https://docs.all-hands.dev/modules/usage/cloud/cloud-api#obtaining-an-api-key
 
 ```bash
 export LLM_OPENHANDS_KEY=your_api_key_here
 
-llm -m devin "Hello, OpenHands"
+llm -m openhands "Check for the authentication module to make sure that it follows the coding best practices for this repo." -o repository https://github.com/yourusername/your-repo
 ```
 
 ## Development
