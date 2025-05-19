@@ -13,8 +13,7 @@ class OpenHandsModel(llm.KeyModel):
 
     class Options(llm.Options):
         repository: Optional[str] = Field(
-            description="GitHub repository URL to analyze",
-            default=None
+            description="GitHub repository URL to analyze", default=None
         )
 
     def __init__(self):
@@ -22,11 +21,9 @@ class OpenHandsModel(llm.KeyModel):
 
     def execute(self, prompt, stream, response, conversation, key):
         request_json = {"initial_user_msg": prompt.prompt}
-        
-        # Add repository URL to the request if provided
         if prompt.options.repository:
             request_json["repository"] = prompt.options.repository
-            
+
         create_conversation_response = httpx.post(
             "https://app.all-hands.dev/api/conversations",
             headers={"Authorization": f"Bearer {key}"},

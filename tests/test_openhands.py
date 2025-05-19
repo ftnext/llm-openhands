@@ -15,7 +15,7 @@ def test_plugin_is_installed():
 
 
 @respx.mock
-def test_execute(respx_mock):
+def test_execute_without_repository(respx_mock):
     respx_mock.post(
         "https://app.all-hands.dev/api/conversations",
         headers__contains={"Authorization": "Bearer test-api-key"},
@@ -99,12 +99,14 @@ def test_execute(respx_mock):
 
 
 @respx.mock
-def test_execute_with_repository(respx_mock):
-    repo_url = "https://github.com/yourusername/your-repo"
+def test_execute(respx_mock):
     respx_mock.post(
         "https://app.all-hands.dev/api/conversations",
         headers__contains={"Authorization": "Bearer test-api-key"},
-        json__eq={"initial_user_msg": "Check the code", "repository": repo_url},
+        json__eq={
+            "initial_user_msg": "Check the code",
+            "repository": "https://github.com/yourusername/your-repo",
+        },
     ).mock(
         return_value=httpx.Response(
             status_code=200,
@@ -146,7 +148,7 @@ def test_execute_with_repository(respx_mock):
     prompt = MagicMock()
     prompt.prompt = "Check the code"
     prompt.options = MagicMock()
-    prompt.options.repository = repo_url
+    prompt.options.repository = "https://github.com/yourusername/your-repo"
 
     actual = list(
         sut.execute(
