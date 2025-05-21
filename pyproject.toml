@@ -1,7 +1,7 @@
 [project]
 name = "llm-openhands"
 version = "0.0.1"
-description = ""
+description = "LLM plugin to access OpenHands Cloud API"
 readme = "README.md"
 authors = [{ name = "nikkie", email = "takuyafjp+develop@gmail.com" }]
 license = "Apache-2.0"
